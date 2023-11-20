@@ -9,11 +9,15 @@ public class Bot {
     public static void main(String args[]) {
         JDABuilder builder = JDABuilder.createDefault("token");
 
+        pingCommand = new PingCommand();
+
+        builder.addEventListeners(pingCommand);
+
         try {
-            
+
             jda = builder.build().awaitReady();
 
-            pingCommand = new PingCommand();
+            pingCommand.init();
 
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
