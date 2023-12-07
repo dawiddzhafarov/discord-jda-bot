@@ -14,15 +14,17 @@ public class ScheduleCommand extends ListenerAdapter {
                 .addOption(OptionType.STRING, "Day of the Week", "dsa")
                 .addOption(OptionType.STRING, "Time", "dsa")
                 .addOption(OptionType.INTEGER, "Duration", "dsa")
-                .addOption(OptionType.STRING, "Description", "dsa").queue();
+                .addOption(OptionType.STRING, "Description", "dsa")
+                .queue();
 
-        Bot.jda.upsertCommand("update-schedule", "Updates the schedule")
+        Bot.jda.upsertCommand("update-schedule", "Updates the event in schedule")
                 .addOption(OptionType.STRING, "Schedule Name", "dsa")
                 .addOption(OptionType.STRING, "Event Name", "dsa")
                 .addOption(OptionType.STRING, "Day of the Week", "dsa")
                 .addOption(OptionType.STRING, "Time", "dsa")
                 .addOption(OptionType.INTEGER, "Duration", "dsa")
-                .addOption(OptionType.STRING, "Description", "dsa").queue();
+                .addOption(OptionType.STRING, "Description", "dsa")
+                .queue();
     }
 
     @Override
@@ -31,16 +33,18 @@ public class ScheduleCommand extends ListenerAdapter {
 
             //baza = SuperBaza();
             event.reply("pong").queue();
-            List<OptionMapping> args = event.getOptions();
-            args.get(0);
+            try {
+                String scheduleName = event.getOption("Schedule Name").getAsString();
+                String eventName = event.getOption("Event Name").getAsString();
+                String day = event.getOption("Day of the Week").getAsString();
+                String time = event.getOption("Time").getAsString();
+                Integer duration = event.getOption("Duration").getAsInt();
+            } catch (NullPointerException e) {
+                event.reply("Please provide all required parameters").queue();
+                return;
+            }
 
-            String scheduleName = event.getOption("Schedule Name").getAsString();
-            String eventName = event.getOption("Event Name").getAsString();
-            String day = event.getOption("Day of the Week").getAsString();
-            String time = event.getOption("Time").getAsString();
-            Integer duration = event.getOption("Duration").getAsInt();
-            String description = event.getOption("Description").getAsString();
-
+            String description = event.getOption("Description", "", OptionMapping::getAsString);
             // ID usera + scheduleName = klucz w bazie danych
             String userID = event.getUser().getId();
             String dbKey = userID + scheduleName;
@@ -54,21 +58,28 @@ public class ScheduleCommand extends ListenerAdapter {
 
             return;
         }
+
         if (event.getName().equals("update-schedule")) {
 
             //baza = SuperBaza();
-            List<OptionMapping> args = event.getOptions();
             OptionMapping scheduleNameOptionMapping = event.getOption("Schedule Name");
-            if (scheduleNameOptionMapping == null) {
-                // error
-            } else {
-                String scheduleName = scheduleNameOptionMapping.getAsString();
+            try {
+                String scheduleName = event.getOption("Schedule Name").getAsString();
+                String eventName = event.getOption("Event Name").getAsString();
+            } catch (NullPointerException e) {
+                event.reply("Please provide Schedule Name and Event Name").queue();
+                return;
             }
-            String eventName = event.getOption("Event Name").getAsString();
-            String day = event.getOption("Day of the Week").getAsString();
-            String time = event.getOption("Time").getAsString();
-            Integer duration = event.getOption("Duration").getAsInt();
-            String description = event.getOption("Description").getAsString();
+            //From baza get all
+            String currentDay;
+            String currentTime;
+            Integer currentDuration;
+            String currentDescription;
+
+            String day = event.getOption("Day of the Week", currentDay, OptionMapping::getAsString);
+            String time = event.getOption("Time", currentTime, OptionMapping::getAsString);
+            Integer duration = event.getOption("Duration", currentDuration, OptionMapping::getAsInt);
+            String description = event.getOption("Description", currentDescription, OptionMapping::getAsString);
 
 // ID usera + scheduleName = klucz w bazie danych
 //            String userID = event.getUser().getId();
