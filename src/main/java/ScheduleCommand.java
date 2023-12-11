@@ -14,7 +14,7 @@ public class ScheduleCommand extends ListenerAdapter {
                 .addOption(OptionType.STRING, "day-of-the-week", "Day of the week")
                 .addOption(OptionType.STRING, "time", "Time of the event")
                 .addOption(OptionType.INTEGER, "duration", "Duration of the event")
-                .addOption(OptionType.STRING, "Description", "Description of the event")
+                .addOption(OptionType.STRING, "description", "Description of the event")
                 .queue();
 
         Bot.jda.upsertCommand("update-schedule", "Updates the schedule")
@@ -39,25 +39,35 @@ public class ScheduleCommand extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if (event.getName().equals("set-schedule")) {
+            String scheduleName = null;
+            String eventName = null;
+            String day = null;
+            String time = null;
+            Integer duration = null;
             try {
-                String scheduleName = event.getOption("schedule-name").getAsString();
-                String eventName = event.getOption("event-name").getAsString();
-                String day = event.getOption("day-of-the-week").getAsString();
-                String time = event.getOption("time").getAsString();
-                Integer duration = event.getOption("duration").getAsInt();
+                scheduleName = event.getOption("schedule-name").getAsString();
+                eventName = event.getOption("event-name").getAsString();
+                day = event.getOption("day-of-the-week").getAsString();
+                time = event.getOption("time").getAsString();
+                duration = event.getOption("duration").getAsInt();
             } catch (NullPointerException e) {
-                event.reply("Please provide all required parameters").queue();
+                event.reply("Please provide all required parameters").setEphemeral(true).queue();
                 return;
             }
 
             String description = event.getOption("description", "", OptionMapping::getAsString);
 
-//             entry = baza.select(user=userID, scheduleName=scheduleName)
-//             if entry exist {
-//                entry += dane
-//                baza.update(where user = userID, scheduleName=..., entry
-//             } else {
-//             baza.insert(where user = userID, scheduleName=..., entry
+            if (Bot.getScheduleManager().getScheduleComposite(event.getUser().getId())
+                    .createOrGetSchedule(scheduleName)
+                    .getEvent(eventName) != null) {
+                event.reply("Schedule event with name: "+eventName+" already exists!").setEphemeral(true).queue();
+                return;
+            }
+
+            Bot.getScheduleManager().getScheduleComposite(event.getUser().getId())
+                    .createOrGetSchedule(scheduleName)
+                    .updateEvent(eventName, day, time, duration, description);
+            event.reply("Schedule *"+scheduleName+"* added with event "+eventName+"!").setEphemeral(true).queue();
 
             return;
         }
@@ -65,76 +75,84 @@ public class ScheduleCommand extends ListenerAdapter {
         if (event.getName().equals("update-schedule")) {
             // update should allow to change the name of the event, duration, time, description, day
 
-            //baza = SuperBaza();
+            String scheduleName;
+            String eventName;
             try {
-                String scheduleName = event.getOption("schedule-name").getAsString();
-                String eventName = event.getOption("event-name").getAsString();
+                scheduleName = event.getOption("schedule-name").getAsString();
+                eventName = event.getOption("event-name").getAsString();
             } catch (NullPointerException e) {
-                event.reply("Please provide Schedule Name and Event Name").queue();
+                event.reply("Please provide Schedule Name and Event Name").setEphemeral(true).queue();
                 return;
             }
-            //From baza get all
-            String currentDay = null;
-            String currentTime = null;
-            Integer currentDuration = null;
-            String currentDescription = null;
 
-            String day = event.getOption("day-of-the-week", currentDay, OptionMapping::getAsString);
-            String time = event.getOption("time", currentTime, OptionMapping::getAsString);
-            Integer duration = event.getOption("duration", currentDuration, OptionMapping::getAsInt);
-            String description = event.getOption("description", currentDescription, OptionMapping::getAsString);
+            ScheduleManager.ScheduleComposite.Schedule schedule = Bot.getScheduleManager().getScheduleComposite(event.getUser().getId())
+                    .getSchedule(scheduleName);
+            if (schedule == null){
+                event.reply("Schedule with name: "+scheduleName+" does not exist!").setEphemeral(true).queue();
+                return;
+            }
 
+            ScheduleManager.ScheduleComposite.Schedule.ScheduleEvent scheduleEvent = schedule.getEvent(eventName);
+            if (scheduleEvent == null) {
+                event.reply("Schedule event with name: "+eventName+" does not exist!").setEphemeral(true).queue();
+                   return;
+            }
 
-//              baza = SuperBaza();
-//              entries = baza.Select(user=userID, scheduleName=scheduleName)
-//              if entries exist {
-//                  for entry : entries:
-//                        if (entry.EventName == eventName) {
-//                            //perform updates on this event
-//                        }
-//              } else {
-//              event.reply("Schedule with name: %s does not exist!", scheduleName).queue();
-//                return;
+            String day = event.getOption("day-of-the-week", scheduleEvent.getDay(), OptionMapping::getAsString);
+            String time = event.getOption("time", scheduleEvent.getTime(), OptionMapping::getAsString);
+            Integer duration = event.getOption("duration", scheduleEvent.getDuration(), OptionMapping::getAsInt);
+            String description = event.getOption("description", scheduleEvent.getDescription(), OptionMapping::getAsString);
+
+            schedule.updateEvent(eventName, day, time, duration, description);
+
+            event.reply("Schedule *" + scheduleName + "* event *" + eventName + "* updated!").setEphemeral(true).queue();
+
         }
+
         if (event.getName().equals("delete-schedule")) {
 
-            //baza = SuperBaza();
-
+            String scheduleName;
             try {
-                String scheduleName = event.getOption("schedule-name").getAsString();
+                scheduleName = event.getOption("schedule-name").getAsString();
             } catch (NullPointerException e) {
-                event.reply("Please provide Schedule Name").queue();
+                event.reply("Please provide Schedule Name").setEphemeral(true).queue();
                 return;
             }
 
-            String userID = event.getUser().getId();
+            String err = Bot.getScheduleManager().getScheduleComposite(event.getUser().getId())
+                    .deleteSchedule(scheduleName);
+            if (err == null) {
+                event.reply("Schedule *" + scheduleName + "* deleted.").setEphemeral(true).queue();
+            } else {
+                event.reply("Could not delete the schedule *" + scheduleName + "*, because *" + err + "*").setEphemeral(true).queue();
+            }
 
-//          entry, err = baza.Delete(user=userID, scheduleName=scheduleName)
-//            if entry {
-//                return;
-//            } else {
-//                event.reply("could not delete the schedule entry: %s", err).queue();
-//            }
-//            return;
         }
         if (event.getName().equals("delete-schedule-event")) {
 
-            //baza = SuperBaza();
-
+            String scheduleName;
+            String eventName;
             try {
-                String scheduleName = event.getOption("schedule-name").getAsString();
-                String eventName = event.getOption("event-name").getAsString();
+                scheduleName = event.getOption("schedule-name").getAsString();
+                eventName = event.getOption("event-name").getAsString();
             } catch (NullPointerException e) {
-                event.reply("Please provide Schedule Name and Event Name").queue();
+                event.reply("Please provide Schedule Name and Event Name").setEphemeral(true).queue();
                 return;
             }
 
-            String userID = event.getUser().getId();
+            ScheduleManager.ScheduleComposite.Schedule schedule = Bot.getScheduleManager().getScheduleComposite(event.getUser().getId())
+                    .getSchedule(scheduleName);
+            if (schedule == null){
+                event.reply("Schedule with name: "+scheduleName+" does not exist!").setEphemeral(true).queue();
+                return;
+            }
 
-//          entries, err = baza.Delete(user=userID, scheduleName=scheduleName)
- //           struct = json.Parse(entries);
-//            struct.remove(eventName);
-//            baza.update(userID, scheduleName, structJson);
+            String err = schedule.deleteEvent(eventName);
+            if (err == null) {
+                event.reply("Schedule *" + scheduleName + "* event *" + eventName + "* deleted.").setEphemeral(true).queue();
+            } else {
+                event.reply("Could not delete the schedule *" + scheduleName + "* event *"+eventName+"*, because *" + err + "*").setEphemeral(true).queue();
+            }
         }
     }
 }

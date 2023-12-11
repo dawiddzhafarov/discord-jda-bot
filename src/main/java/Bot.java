@@ -7,8 +7,12 @@ public class Bot {
     static private PingCommand pingCommand;
     static private ScheduleCommand scheduleCommand;
 
+    static private Database database;
+
+    static private ScheduleManager scheduleManager;
+
     public static void main(String args[]) {
-        JDABuilder builder = JDABuilder.createDefault("MTE3NDA0MTM1MzYxMzc1NDQyMA.G3RYpb.XJimBwFjxUhxgTDX9Avvb8pwrcu0YWxdD2kOzA");
+        JDABuilder builder = JDABuilder.createDefault("token");
 
         pingCommand = new PingCommand();
         scheduleCommand = new ScheduleCommand();
@@ -17,15 +21,34 @@ public class Bot {
 
         try {
 
+            database = new Database();
+            if (!database.isInitialised())
+                return;
+            System.out.println("Database connected.");
+
+            scheduleManager = new ScheduleManager();
+            if (!scheduleManager.init())
+                return;
+            System.out.println("ScheduleManager loaded.");
+
+
             jda = builder.build().awaitReady();
 
             pingCommand.init();
             scheduleCommand.init();
+            System.out.println("Commands initialised.");
 
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
 
+    }
 
+    public static Database getDatabase() {
+        return database;
+    }
+
+    public static ScheduleManager getScheduleManager() {
+        return scheduleManager;
     }
 }

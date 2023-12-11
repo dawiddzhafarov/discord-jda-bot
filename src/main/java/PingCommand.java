@@ -10,7 +10,7 @@ public class PingCommand extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if (event.getName().equals("ping")) {
-            event.reply("pong").queue();
+            event.reply("pong").setEphemeral(true).queue();
         }
     }
 
