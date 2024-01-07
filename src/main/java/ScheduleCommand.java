@@ -34,6 +34,15 @@ public class ScheduleCommand extends ListenerAdapter {
                 .addOption(OptionType.STRING, "schedule-name", "Name of the schedule")
                 .addOption(OptionType.STRING, "event-name", "Name of the event")
                 .queue();
+
+        Bot.jda.upsertCommand("show-schedule", "Shows schedule")
+                .addOption(OptionType.STRING, "schedule-name", "Name of the schedule")
+                .queue();
+
+        Bot.jda.upsertCommand("show-event", "Shows event")
+                .addOption(OptionType.STRING, "schedule-name", "Name of the schedule")
+                .addOption(OptionType.STRING, "event-name", "Name of the event")
+                .queue();
     }
 
     @Override
@@ -153,6 +162,46 @@ public class ScheduleCommand extends ListenerAdapter {
             } else {
                 event.reply("Could not delete the schedule *" + scheduleName + "* event *"+eventName+"*, because *" + err + "*").setEphemeral(true).queue();
             }
+        }
+        if (event.getName().equals("show-schedule")) {
+
+            String scheduleName;
+            try {
+                scheduleName = event.getOption("schedule-name").getAsString();
+            } catch (NullPointerException e) {
+                event.reply("Please provide Schedule Name").setEphemeral(true).queue();
+                return;
+            }
+
+            ScheduleManager.ScheduleComposite.Schedule schedule = Bot.getScheduleManager().getScheduleComposite(event.getUser().getId())
+                    .getSchedule(scheduleName);
+            if (schedule == null){
+                event.reply("Schedule with name: "+scheduleName+" does not exist!").setEphemeral(true).queue();
+                return;
+            }
+
+            event.reply("Schedule with name: "+scheduleName + ": " + schedule).setEphemeral(true).queue();
+        }
+        if (event.getName().equals("show-event")) {
+
+            String scheduleName;
+            String eventName;
+            try {
+                scheduleName = event.getOption("schedule-name").getAsString();
+                eventName = event.getOption("event-name").getAsString();
+            } catch (NullPointerException e) {
+                event.reply("Please provide Schedule Name and Event Name").setEphemeral(true).queue();
+                return;
+            }
+
+            ScheduleManager.ScheduleComposite.Schedule.ScheduleEvent scheduleEvent = Bot.getScheduleManager().getScheduleComposite(event.getUser().getId())
+                    .getSchedule(scheduleName).getEvent(eventName);
+            if (scheduleEvent == null){
+                event.reply("Event with name: "+eventName+" does not exist!").setEphemeral(true).queue();
+                return;
+            }
+
+            event.reply("Event with name: " + eventName + "of schedule: " + scheduleName + ": " + scheduleEvent).setEphemeral(true).queue();
         }
     }
 }
