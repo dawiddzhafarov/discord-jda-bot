@@ -42,28 +42,34 @@ public class Notificator {
         }
         LocalDate currentDate = LocalDate.now();
         DayOfWeek currentDayOfWeek = currentDate.getDayOfWeek();
-        if (!currentDayOfWeek.equals(DayOfWeek.valueOf(event.getDay())))
+        if (!currentDayOfWeek.equals(DayOfWeek.valueOf(event.getDay()))) {
+            System.out.println(currentDayOfWeek + " vs " + event.getDay());
             return;
+        }
 
 
         int offset = event.getNotificationOffset();
-        int offsetHours = offset/60;
-        int offsetMinutes = offset%60;
 
         int eventHour = Integer.parseInt(event.getTime().split(":")[0]);
         int eventMinutes = Integer.parseInt(event.getTime().split(":")[1]);
+        LocalTime timeOfNotification = LocalTime.of(eventHour, eventMinutes).minusMinutes(offset);
 
         LocalTime currentTime = LocalTime.now();
-        if (eventHour - offsetHours != currentTime.getHour())
+        if (timeOfNotification.getHour() != currentTime.getHour()) {
+            System.out.println("Current h: " + currentTime.getHour() + " vs "+timeOfNotification.getHour() );
             return;
+        }
 
-        if (eventMinutes - offsetMinutes != currentTime.getMinute())
+        if (timeOfNotification.getMinute() != currentTime.getMinute()) {
+            System.out.println("Current m: " + currentTime.getMinute() + " vs "+timeOfNotification.getMinute());
             return;
+        }
 
         User user = Bot.jda.retrieveUserById(userId).complete();
+        System.out.println("Staram się wysłać dla usera: "+user);
 
         user.openPrivateChannel().queue(privateChannel -> {
-            privateChannel.sendMessage("Your " + event + " is due soon").queue();
+            privateChannel.sendMessage("Your " + event + " is due in "+offset+" minutes!").queue();
         });
     }
 }
