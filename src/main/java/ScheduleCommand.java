@@ -66,7 +66,7 @@ public class ScheduleCommand extends ListenerAdapter {
 
             Bot.getScheduleManager().getScheduleComposite(event.getUser().getId())
                     .createOrGetSchedule(scheduleName)
-                    .updateEvent(eventName, day, time, duration, description);
+                    .updateEvent(eventName, day, time, duration, null, description);
             event.reply("Schedule *"+scheduleName+"* added with event "+eventName+"!").setEphemeral(true).queue();
 
             return;
@@ -103,7 +103,7 @@ public class ScheduleCommand extends ListenerAdapter {
             Integer duration = event.getOption("duration", scheduleEvent.getDuration(), OptionMapping::getAsInt);
             String description = event.getOption("description", scheduleEvent.getDescription(), OptionMapping::getAsString);
 
-            schedule.updateEvent(eventName, day, time, duration, description);
+            schedule.updateEvent(eventName, day, time, duration, scheduleEvent.getNotificationOffset(), description);
 
             event.reply("Schedule *" + scheduleName + "* event *" + eventName + "* updated!").setEphemeral(true).queue();
 

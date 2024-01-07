@@ -12,7 +12,7 @@ public class Bot {
     static private ScheduleManager scheduleManager;
 
     public static void main(String args[]) {
-        JDABuilder builder = JDABuilder.createDefault("token");
+        JDABuilder builder = JDABuilder.createDefault("MTE3NDA0MTM1MzYxMzc1NDQyMA.GFLQWv.IMqPj9_uHy6Uj4c2on3qigRA_n9UEcKlRKa4Zw");
 
         pingCommand = new PingCommand();
         scheduleCommand = new ScheduleCommand();

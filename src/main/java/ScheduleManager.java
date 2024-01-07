@@ -118,11 +118,12 @@ public class ScheduleManager {
              * @param day
              * @param time
              * @param duration
+             * @param notificationOffset
              * @param description
              */
-            public void updateEvent(String eventName, String day, String time, Integer duration, String description) {
+            public void updateEvent(String eventName, String day, String time, Integer duration, Integer notificationOffset, String description) {
                 eventByName.putIfAbsent(eventName, new ScheduleEvent(eventName));
-                eventByName.get(eventName).update(day, time, duration,description);
+                eventByName.get(eventName).update(day, time, duration, notificationOffset, description);
                 this.updateDatabase();
             }
 
@@ -177,16 +178,18 @@ public class ScheduleManager {
                 private String day;
                 private String time;
                 private Integer duration;
+                private Integer notificationOffset;
                 private String description;
 
                 public ScheduleEvent(String eventName){
                     this.eventName = eventName;
                 }
 
-                public void update(String day, String time, Integer duration, String description) {
+                public void update(String day, String time, Integer duration, Integer notificationOffset, String description) {
                     this.day = day;
                     this.time = time;
                     this.duration = duration;
+                    this.notificationOffset = notificationOffset;
                     this.description = description;
                 }
 
@@ -195,6 +198,7 @@ public class ScheduleManager {
                             + " | day: " + day
                             + " | time: " + time
                             + " | duration: " + duration
+                            + " | notificationOffset: " + notificationOffset
                             + " | description: " + description
                             + "]";
                 }
@@ -221,6 +225,14 @@ public class ScheduleManager {
 
                 public void setDuration(Integer duration) {
                     this.duration = duration;
+                }
+
+                public Integer getNotificationOffset() {
+                    return notificationOffset;
+                }
+
+                public void setNotificationOffset(Integer notificationOffset) {
+                    this.notificationOffset = notificationOffset;
                 }
 
                 public String getDescription() {
