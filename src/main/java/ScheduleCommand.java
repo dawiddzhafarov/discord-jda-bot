@@ -3,6 +3,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 
+import java.util.Collection;
 import java.util.List;
 
 public class ScheduleCommand extends ListenerAdapter {
@@ -35,11 +36,14 @@ public class ScheduleCommand extends ListenerAdapter {
                 .addOption(OptionType.STRING, "event-name", "Name of the event")
                 .queue();
 
-        Bot.jda.upsertCommand("show-schedule", "Shows schedule")
+        Bot.jda.upsertCommand("list-schedules", "Shows schedules")
+                .queue();
+
+        Bot.jda.upsertCommand("get-schedule", "Shows schedule")
                 .addOption(OptionType.STRING, "schedule-name", "Name of the schedule")
                 .queue();
 
-        Bot.jda.upsertCommand("show-event", "Shows event")
+        Bot.jda.upsertCommand("get-event", "Shows event")
                 .addOption(OptionType.STRING, "schedule-name", "Name of the schedule")
                 .addOption(OptionType.STRING, "event-name", "Name of the event")
                 .queue();
@@ -163,7 +167,18 @@ public class ScheduleCommand extends ListenerAdapter {
                 event.reply("Could not delete the schedule *" + scheduleName + "* event *"+eventName+"*, because *" + err + "*").setEphemeral(true).queue();
             }
         }
-        if (event.getName().equals("show-schedule")) {
+        if (event.getName().equals("list-schedules")) {
+
+            Collection<ScheduleManager.ScheduleComposite.Schedule> schedules = Bot.getScheduleManager().getScheduleComposite(event.getUser().getId())
+                    .getSchedules();
+            if (schedules == null){
+                event.reply("There are no schedules yet!").setEphemeral(true).queue();
+                return;
+            }
+
+            event.reply("Your schedules:" + schedules).setEphemeral(true).queue();
+        }
+        if (event.getName().equals("get-schedule")) {
 
             String scheduleName;
             try {
@@ -182,7 +197,7 @@ public class ScheduleCommand extends ListenerAdapter {
 
             event.reply("Schedule with name: "+scheduleName + ": " + schedule).setEphemeral(true).queue();
         }
-        if (event.getName().equals("show-event")) {
+        if (event.getName().equals("get-event")) {
 
             String scheduleName;
             String eventName;
