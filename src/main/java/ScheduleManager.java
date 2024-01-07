@@ -5,11 +5,16 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ScheduleManager {
 
     private static Gson GSON = new Gson();
+
+    public HashMap<String, ScheduleComposite> getScheduleCompositeByUserId() {
+        return scheduleCompositeByUserId;
+    }
 
     private HashMap<String, ScheduleComposite> scheduleCompositeByUserId = new HashMap<String, ScheduleComposite>();
 
@@ -37,6 +42,7 @@ public class ScheduleManager {
         scheduleCompositeByUserId.putIfAbsent(userId, new ScheduleComposite(userId));
         return scheduleCompositeByUserId.get(userId);
     }
+
 
     public class ScheduleComposite {
         private String userId;
@@ -95,6 +101,10 @@ public class ScheduleManager {
         public class Schedule {
             private String scheduleName;
             private String userId;
+
+            public Collection<ScheduleEvent> getEvents() {
+                return eventByName.values();
+            }
 
             private HashMap<String, ScheduleEvent> eventByName = new HashMap<String, ScheduleEvent>();
 
