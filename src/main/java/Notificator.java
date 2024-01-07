@@ -21,6 +21,8 @@ public class Notificator {
                 notificate();
             }
         };
+
+        timer.scheduleAtFixedRate(task, delay, period);
     }
 
     private void notificate(){
